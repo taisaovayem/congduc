@@ -1,5 +1,6 @@
 services:
   web:
+    container_name: congduc-web
     networks:
       default: {}
       web_network:

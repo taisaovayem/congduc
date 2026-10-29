@@ -57,15 +57,25 @@ docker compose -f docker-compose.yml -f docker-compose.server.yml exec web wget 
 
 ### Chạy đúng proxy
 
-Sau khi đã có `postgres` và `api`, hoặc vừa sửa `docker-compose.server.yml` / image web — chỉ bật lại **web** kèm override server (để container vào `web_network` với alias `congduc-web`), rồi reload nginx ngoài:
+**Luôn** kèm `docker-compose.server.yml` — container web tên cố định **`congduc-web`** trên `web_network` (giống `tmthan`, `packing-record-web`).
 
 ```sh
-docker compose -f docker-compose.yml -f docker-compose.server.yml up -d web
+docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
+docker exec nginx-proxy getent hosts congduc-web   # phải ra IP
 docker restart nginx-proxy
-docker logs --tail 30 nginx-proxy
 ```
 
-Lần deploy đầu hoặc đổi API/DB vẫn dùng `up -d --build` cả stack (lệnh ở trên). Chỉ cần ba lệnh trên khi chỉnh web hoặc nginx không thấy upstream.
+Chỉ rebuild web:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build web
+docker exec nginx-proxy getent hosts congduc-web
+docker restart nginx-proxy
+```
+
+**Không** `restart nginx-proxy` khi `getent hosts congduc-web` báo lỗi — nginx resolve upstream lúc khởi động, thiếu tên → **cả proxy sập** (mọi site).
+
+Nếu nginx đang loop: tạm **comment** block `server_name` congduc trong `nginx.conf`, `docker restart nginx-proxy`, bật lại stack congduc, rồi bật block và restart.
 
 ### Ghi chú Dockerfile
 
@@ -79,31 +89,33 @@ Build args web (production): `VITE_API_URL`, `VITE_WS_URL` — trên server nên
 
 ### Khối nginx (container `nginx-proxy` trên `web_network`)
 
-Thêm `server` trỏ upstream **`congduc-web:80`** (alias trong `docker-compose.server.yml`):
+Trong `http { }` (một lần), thêm resolver Docker — tránh nginx **emerg** khi congduc chưa chạy lúc restart:
 
 ```nginx
-map $http_upgrade $connection_upgrade {
-    default upgrade;
-    ''      close;
-}
+    resolver 127.0.0.11 valid=10s ipv6=off;
+```
 
-server {
-    listen 80;
-    server_name congduc.example.com;
+Block `server` (upstream **`congduc-web:80`**, tên container từ `docker-compose.server.yml`):
 
-    location / {
-        proxy_pass http://congduc-web:80;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-        proxy_connect_timeout 60s;
-        proxy_read_timeout 86400s;
+```nginx
+    server {
+        listen 80;
+        server_name congduc.example.com;
+
+        location / {
+            set $congduc_upstream congduc-web;
+            proxy_pass http://$congduc_upstream:80;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_connect_timeout 300s;
+            proxy_read_timeout 86400s;
+        }
     }
-}
 ```
 
 Đổi `congduc.example.com` thành tên miền thật. **Không** gắn `api` hay `postgres` vào `web_network` — chỉ `web` được expose qua proxy; API và DB chỉ trong network nội bộ của compose.
