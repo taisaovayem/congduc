@@ -22,9 +22,9 @@ cp .env.example .env
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-- Web Vite: `http://localhost:5173` (hoặc `WEB_PORT` trong `.env`)
-- API: `http://127.0.0.1:3000`
-- Postgres: `127.0.0.1:5432`, data tại `./docker/postgres-data`
+- Web Vite: `http://127.0.0.1:5173` (override `docker-compose.dev.yml` publish loopback)
+- API / Postgres: loopback qua dev override — tránh trùng port thì chỉnh `API_PORT`, `DATABASE_PORT` trong `.env`
+- Data Postgres tại `./docker/postgres-data`
 
 API tự chạy migration khi khở động.
 
@@ -45,15 +45,15 @@ cp .env.example .env
 docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
 ```
 
+Production **không publish port ra host** — `postgres`, `api`, `web` chỉ giao tiếp trên network Docker; `web` thêm `web_network` để `nginx-proxy` truy cập `http://congduc-web:80`. Không đụng `3000` / `8080` / `5432` trên máy host.
+
 Kiểm tra:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.server.yml ps
 docker compose -f docker-compose.yml -f docker-compose.server.yml logs -f web api
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/
+docker compose -f docker-compose.yml -f docker-compose.server.yml exec web wget -qO- http://127.0.0.1/ | head
 ```
-
-(`WEB_PORT` mặc định `8080` — chỉ bind loopback để debug; traffic công khai đi qua nginx.)
 
 ### Chạy đúng proxy
 
@@ -115,7 +115,7 @@ HTTPS: cấu hình TLS tại Cloudflare hoặc thêm listener `443` trên nginx-
 | Biến | Ý nghĩa |
 |------|---------|
 | `DATABASE_*` | Postgres (trong compose: `DATABASE_HOST=postgres`) |
-| `API_PORT` / `WEB_PORT` | Port bind **127.0.0.1** trên host (debug) |
+| `API_PORT` / `WEB_PORT` / `DATABASE_PORT` | Chỉ với **`docker-compose.dev.yml`** (publish loopback) |
 | `VITE_API_URL` / `VITE_WS_URL` | Build frontend; production Docker: để trống |
 | `WEB_NETWORK` | Tên network ngoài (mặc định `web_network`) |
 

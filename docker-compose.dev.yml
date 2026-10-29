@@ -1,7 +1,13 @@
 services:
+  postgres:
+    ports:
+      - "127.0.0.1:${DATABASE_PORT:-5432}:5432"
+
   api:
     build:
       target: development
+    ports:
+      - "127.0.0.1:${API_PORT:-3000}:3000"
     volumes:
       - ./apps/api:/app/apps/api
       - /app/apps/api/node_modules
@@ -12,7 +18,7 @@ services:
     build:
       target: development
     ports:
-      - "${WEB_PORT:-5173}:5173"
+      - "127.0.0.1:${WEB_PORT:-5173}:5173"
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
       VITE_WS_URL: ${VITE_WS_URL:-http://localhost:3000}
