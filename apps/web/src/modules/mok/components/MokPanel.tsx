@@ -1,5 +1,8 @@
-import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
+import moImage from '@/assets/images/mo.png';
+import { useMokSound } from '../hooks/use-mok-sound';
+import styles from './MokPanel.module.scss';
+
 interface MokPanelProps {
   connected: boolean;
   hitMok: () => void;
@@ -7,6 +10,12 @@ interface MokPanelProps {
 }
 
 export function MokPanel({ connected, hitMok, lastBroadcast }: MokPanelProps) {
+  const playMoSound = useMokSound();
+
+  const handleHit = () => {
+    playMoSound();
+    hitMok();
+  };
 
   return (
     <Card title="Gõ mõ">
@@ -16,9 +25,15 @@ export function MokPanel({ connected, hitMok, lastBroadcast }: MokPanelProps) {
         {lastBroadcast ? <p className="text-sm opacity-70">{lastBroadcast}</p> : null}
       </Card.Section>
       <Card.Footer>
-        <Button variant="secondary" size="large" onClick={hitMok} disabled={!connected}>
-          <Button.Label>Gõ mõ</Button.Label>
-        </Button>
+        <button
+          type="button"
+          className={styles.hitButton}
+          onClick={handleHit}
+          disabled={!connected}
+          aria-label="Gõ mõ"
+        >
+          <img src={moImage} alt="" className={styles.hitImage} draggable={false} />
+        </button>
       </Card.Footer>
     </Card>
   );

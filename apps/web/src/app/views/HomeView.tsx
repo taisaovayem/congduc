@@ -8,11 +8,11 @@ interface HomeViewProps {
 }
 
 export function HomeView({ sessionReady }: HomeViewProps) {
-  const { connected, hitMok, lastBroadcast } = useRealtimeSocket(sessionReady);
+  const { connected, hitMok, syncIncense, lastBroadcast } = useRealtimeSocket(sessionReady);
 
   return (
     <div className={styles.stack}>
-      <IncensePanel sessionReady={sessionReady} />
+      <IncensePanel sessionReady={sessionReady} syncIncense={syncIncense} />
       <MokPanel connected={connected} hitMok={hitMok} lastBroadcast={lastBroadcast} />
     </div>
   );

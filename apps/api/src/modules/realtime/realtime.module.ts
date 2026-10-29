@@ -5,6 +5,7 @@ import { MeritLedgerModule } from '../merit-ledger/merit-ledger.module';
 import { MokService } from '../mok/mok.service';
 import { HitMokHandler } from '../mok/commands/hit-mok.handler';
 import { IncenseAccrualScheduler } from './incense-accrual.scheduler';
+import { IncenseExpiryScheduler } from './incense-expiry.scheduler';
 import { RealtimeGateway } from './realtime.gateway';
 import { WsDeviceIdGuard } from './ws-device-id.guard';
 
@@ -13,6 +14,7 @@ import { WsDeviceIdGuard } from './ws-device-id.guard';
   providers: [
     RealtimeGateway,
     IncenseAccrualScheduler,
+    IncenseExpiryScheduler,
     WsDeviceIdGuard,
     MokService,
     HitMokHandler,

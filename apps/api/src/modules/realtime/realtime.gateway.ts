@@ -65,6 +65,13 @@ export class RealtimeGateway implements OnGatewayConnection {
     this.server.to(this.deviceRoom(deviceId)).emit(event, payload);
   }
 
+  @UseGuards(WsDeviceIdGuard)
+  @SubscribeMessage('incense:sync')
+  async handleIncenseSync(@ConnectedSocket() client: Socket) {
+    const deviceId = client.data.deviceId as string;
+    return this.pushIncenseState(deviceId);
+  }
+
   async pushIncenseState(deviceId: string): Promise<IncenseRealtimePayload | null> {
     const account = await this.accountRepository.findByDeviceId(deviceId);
     if (!account) {

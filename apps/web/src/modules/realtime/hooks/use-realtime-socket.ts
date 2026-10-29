@@ -59,5 +59,9 @@ export function useRealtimeSocket(enabled: boolean) {
     socketRef.current?.emit('mok:hit', {});
   }, []);
 
-  return { connected, hitMok, lastBroadcast };
+  const syncIncense = useCallback(() => {
+    socketRef.current?.emit('incense:sync', {});
+  }, []);
+
+  return { connected, hitMok, syncIncense, lastBroadcast };
 }

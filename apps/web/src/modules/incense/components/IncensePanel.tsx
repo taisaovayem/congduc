@@ -1,17 +1,25 @@
+import { useCallback } from 'react';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
+import { useIncenseCountdown } from '../hooks/use-incense-countdown';
 import { useIncenseState, useStartIncense } from '../hooks/use-incense';
 
 interface IncensePanelProps {
   sessionReady: boolean;
+  syncIncense: () => void;
 }
 
-export function IncensePanel({ sessionReady }: IncensePanelProps) {
+export function IncensePanel({ sessionReady, syncIncense }: IncensePanelProps) {
   const { data: incenseState } = useIncenseState(sessionReady);
   const startIncense = useStartIncense();
 
-  const active = incenseState?.active ?? false;
-  const remaining = incenseState?.remainingSeconds ?? 0;
+  const onBurnedOut = useCallback(() => {
+    syncIncense();
+  }, [syncIncense]);
+
+  const { burning, remainingSeconds: remaining } = useIncenseCountdown(incenseState, onBurnedOut);
+
+  const active = burning;
   const minutes = Math.floor(remaining / 60);
   const seconds = remaining % 60;
 

@@ -28,17 +28,15 @@ export class IncenseService {
     }
 
     const now = new Date();
-    if (now >= session.endsAt) {
-      await this.incenseRepository.deactivate(session.id);
-      return;
-    }
-
     const creditUntil = now < session.endsAt ? now : session.endsAt;
     const elapsedSeconds = Math.floor(
       (creditUntil.getTime() - session.lastCreditedAt.getTime()) / 1000,
     );
 
     if (elapsedSeconds <= 0) {
+      if (now >= session.endsAt) {
+        await this.incenseRepository.deactivate(session.id);
+      }
       return;
     }
 
@@ -87,8 +85,21 @@ export class IncenseService {
     return this.toView(session);
   }
 
+  /** Kết thúc session nếu đã hết giờ (ghi nốt công đức còn lại). */
+  async finalizeIfExpired(accountId: string): Promise<void> {
+    const session = await this.incenseRepository.findActiveByAccountId(accountId);
+    if (!session) {
+      return;
+    }
+    if (new Date() >= session.endsAt) {
+      await this.creditPendingMerit(accountId);
+    }
+  }
+
   /** Trạng thái nhang + công đức hiển thị (tính trên server, chưa ghi sổ phần giây chờ). */
   async getRealtimeState(accountId: string): Promise<IncenseRealtimePayload> {
+    await this.finalizeIfExpired(accountId);
+
     const balance = BigInt(await this.meritLedgerService.getBalance(accountId));
     const session = await this.incenseRepository.findActiveByAccountId(accountId);
     if (!session) {
