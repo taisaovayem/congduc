@@ -1,5 +1,7 @@
 import clsx from 'clsx';
 import luHuongImage from '@/assets/images/lu-huong.png';
+import { MeritPopOverlay } from '@/shared/components/MeritPopOverlay';
+import { useMeritPopInterval, useMeritPops } from '@/shared/hooks/use-merit-pops';
 import { useIncenseBurnProgress } from '../hooks/use-incense-burn-progress';
 
 interface IncenseBurnerVisualProps {
@@ -20,12 +22,15 @@ const SMOKE_WISPS = [
 
 export function IncenseBurnerVisual({ burning, startedAt, endsAt }: IncenseBurnerVisualProps) {
   const bodyRatio = useIncenseBurnProgress(burning, startedAt, endsAt);
+  const { pops, spawn } = useMeritPops();
+  useMeritPopInterval(burning, spawn, 60_000, 60);
 
   const bodyHeight = Math.round(MAX_BODY_PX * bodyRatio);
   const showStick = burning && bodyRatio > 0.01;
 
   return (
     <div className="relative mx-auto mb-4 w-full max-w-[220px]" aria-hidden>
+      <MeritPopOverlay pops={pops} anchor="incense" />
       <svg className="absolute h-0 w-0 overflow-hidden" aria-hidden focusable="false">
         <defs>
           <filter

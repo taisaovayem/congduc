@@ -12,6 +12,8 @@ export default {
           cream: '#f7ebd8',
           paper: '#f5f0e6',
           ink: '#3d2b1f',
+          gold: '#e8c030',
+          bronze: '#c9940f',
         },
       },
       keyframes: {

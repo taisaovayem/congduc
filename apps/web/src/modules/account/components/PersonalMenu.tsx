@@ -24,9 +24,8 @@ export function PersonalMenu({ meritPoints, onOpenTransfer }: PersonalMenuProps)
       placement="bottomRight"
       dropdownRender={() => (
         <div className="min-w-[220px] rounded-[10px] bg-white p-3 shadow-[0_8px_24px_rgb(0_0_0/12%)]">
-          <div className="mb-2.5 font-semibold text-temple-header">Cá nhân</div>
           <dl className="mb-3">
-            <dt className="mb-0.5 text-xs text-neutral-500">Công đức</dt>
+            <dt className="mb-0.5 text-xs text-neutral-500">Công đức:</dt>
             <dd className="m-0 text-[22px] font-bold text-temple-ink">{meritPoints}</dd>
           </dl>
           <Button variant="secondary" block onClick={handleOpenTransfer}>
