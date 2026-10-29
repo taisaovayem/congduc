@@ -1,7 +1,6 @@
 import { Button as AntButton, ButtonProps as AntButtonProps } from 'antd';
 import clsx from 'clsx';
 import { createContext, ReactNode, useContext } from 'react';
-import styles from './Button.module.scss';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 
@@ -23,18 +22,20 @@ function ButtonRoot({ variant = 'primary', className, loading, ...props }: Butto
         {...props}
         loading={loading}
         type={variant === 'primary' ? 'primary' : 'default'}
-        className={clsx(styles.root, styles[variant], className)}
+        className={clsx(
+          'min-h-10',
+          variant === 'primary' && 'font-semibold',
+          variant === 'secondary' && 'bg-white',
+          variant === 'ghost' && 'border-dashed',
+          className,
+        )}
       />
     </ButtonContext.Provider>
   );
 }
 
 function ButtonLabel({ children }: { children: ReactNode }) {
-  const { loading } = useContext(ButtonContext);
-  if (loading) {
-    return <span className={styles.label}>{children}</span>;
-  }
-  return <span className={styles.label}>{children}</span>;
+  return <span className="tracking-wide">{children}</span>;
 }
 
 export const Button = Object.assign(ButtonRoot, {

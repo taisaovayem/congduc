@@ -1,0 +1,100 @@
+@layer components {
+  .incense-foot {
+    @apply relative h-10 w-1 overflow-hidden rounded-sm;
+    background: linear-gradient(
+      90deg,
+      #4a0f12 0%,
+      #6b1a1f 35%,
+      #8b2228 50%,
+      #6b1a1f 65%,
+      #4a0f12 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 12%),
+      inset 0 -2px 4px rgb(0 0 0 / 35%),
+      0 1px 2px rgb(0 0 0 / 25%);
+  }
+
+  .incense-foot-grain {
+    @apply absolute inset-0 opacity-55 mix-blend-overlay;
+    background: repeating-linear-gradient(
+      175deg,
+      rgb(255 255 255 / 0%) 0,
+      rgb(255 255 255 / 0%) 2px,
+      rgb(0 0 0 / 18%) 3px,
+      rgb(255 255 255 / 8%) 5px
+    );
+  }
+
+  .incense-body {
+    @apply relative -mb-px w-[6px] min-h-0 overflow-hidden rounded-t-sm will-change-[height];
+    background: linear-gradient(
+      93deg,
+      #9a7200 0%,
+      #c49410 18%,
+      #e8c030 42%,
+      #d4a017 58%,
+      #b8860b 82%,
+      #966e00 100%
+    );
+    box-shadow:
+      inset -1px 0 2px rgb(0 0 0 / 15%),
+      inset 1px 0 2px rgb(255 255 255 / 20%),
+      0 0 1px rgb(0 0 0 / 20%);
+  }
+
+  .incense-body-grain {
+    @apply pointer-events-none absolute inset-0 opacity-[0.42] mix-blend-soft-light;
+    background-color: #c49410;
+    filter: url(#incense-body-grain);
+  }
+
+  .incense-body-grain::after {
+    @apply absolute inset-0 opacity-90 mix-blend-overlay;
+    content: '';
+    background:
+      radial-gradient(ellipse 80% 18% at 30% 12%, rgb(255 235 160 / 35%), transparent 70%),
+      radial-gradient(ellipse 70% 22% at 72% 38%, rgb(110 70 0 / 22%), transparent 65%),
+      radial-gradient(ellipse 85% 20% at 45% 68%, rgb(255 220 130 / 28%), transparent 72%),
+      radial-gradient(ellipse 75% 16% at 60% 92%, rgb(90 55 0 / 18%), transparent 68%),
+      linear-gradient(
+        180deg,
+        rgb(255 255 255 / 14%) 0%,
+        transparent 22%,
+        rgb(0 0 0 / 10%) 48%,
+        transparent 78%,
+        rgb(255 255 255 / 8%) 100%
+      );
+    background-repeat: no-repeat;
+  }
+
+  .incense-flame {
+    @apply z-[3] -mb-0.5 h-1.5 w-1.5 animate-flame-flicker;
+    border-radius: 50% 50% 45% 45%;
+    background: radial-gradient(
+      circle at 50% 80%,
+      #ff4500 0%,
+      #ff6b00 45%,
+      #ffb347 75%,
+      transparent 100%
+    );
+    box-shadow:
+      0 0 6px 2px rgb(255 100 0 / 85%),
+      0 0 14px 4px rgb(255 60 0 / 45%),
+      0 -2px 8px rgb(255 140 0 / 55%);
+  }
+
+  .incense-smoke-wisp {
+    @apply absolute bottom-0 left-1/2 h-[72px] w-[9px] -ml-1 opacity-0 blur-[3px] will-change-[transform,opacity];
+    transform-origin: 50% 100%;
+    border-radius: 48% 48% 42% 42% / 12% 12% 88% 88%;
+    background: linear-gradient(
+      to top,
+      rgb(68 68 68 / 92%) 0%,
+      rgb(95 95 95 / 72%) 18%,
+      rgb(118 118 118 / 48%) 42%,
+      rgb(138 138 138 / 26%) 68%,
+      transparent 100%
+    );
+  }
+}

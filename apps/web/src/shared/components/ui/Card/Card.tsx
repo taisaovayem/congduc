@@ -1,7 +1,6 @@
 import { Card as AntCard } from 'antd';
 import clsx from 'clsx';
 import { createContext, HTMLAttributes, ReactNode, useContext } from 'react';
-import styles from './Card.module.scss';
 
 interface CardContextValue {
   padded: boolean;
@@ -17,8 +16,8 @@ interface CardRootProps extends HTMLAttributes<HTMLDivElement> {
 function CardRoot({ title, padded = true, className, children, ...rest }: CardRootProps) {
   return (
     <CardContext.Provider value={{ padded }}>
-      <AntCard title={title} className={clsx(styles.root, className)} {...rest}>
-        <div className={clsx(styles.body, padded && styles.padded)}>{children}</div>
+      <AntCard title={title} className={clsx('rounded-xl', className)} {...rest}>
+        <div className={clsx('flex flex-col gap-3', padded && 'pt-1')}>{children}</div>
       </AntCard>
     </CardContext.Provider>
   );
@@ -27,14 +26,14 @@ function CardRoot({ title, padded = true, className, children, ...rest }: CardRo
 function CardSection({ children, className }: HTMLAttributes<HTMLDivElement>) {
   const { padded } = useContext(CardContext);
   return (
-    <section className={clsx(styles.section, padded && styles.sectionPadded, className)}>
-      {children}
-    </section>
+    <section className={clsx('flex flex-col gap-2', padded && 'py-2', className)}>{children}</section>
   );
 }
 
 function CardFooter({ children, className }: HTMLAttributes<HTMLDivElement>) {
-  return <footer className={clsx(styles.footer, className)}>{children}</footer>;
+  return (
+    <footer className={clsx('mt-2 flex flex-wrap gap-2', className)}>{children}</footer>
+  );
 }
 
 export const Card = Object.assign(CardRoot, {

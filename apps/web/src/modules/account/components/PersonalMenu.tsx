@@ -2,7 +2,6 @@ import { SwapOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Dropdown } from 'antd';
 import { useState } from 'react';
 import { Button } from '@/shared/components/ui/Button';
-import styles from './PersonalMenu.module.scss';
 
 interface PersonalMenuProps {
   meritPoints: string;
@@ -24,11 +23,11 @@ export function PersonalMenu({ meritPoints, onOpenTransfer }: PersonalMenuProps)
       trigger={['click']}
       placement="bottomRight"
       dropdownRender={() => (
-        <div className={styles.panel}>
-          <div className={styles.heading}>Cá nhân</div>
-          <dl className={styles.stats}>
-            <dt>Công đức</dt>
-            <dd>{meritPoints}</dd>
+        <div className="min-w-[220px] rounded-[10px] bg-white p-3 shadow-[0_8px_24px_rgb(0_0_0/12%)]">
+          <div className="mb-2.5 font-semibold text-temple-header">Cá nhân</div>
+          <dl className="mb-3">
+            <dt className="mb-0.5 text-xs text-neutral-500">Công đức</dt>
+            <dd className="m-0 text-[22px] font-bold text-temple-ink">{meritPoints}</dd>
           </dl>
           <Button variant="secondary" block onClick={handleOpenTransfer}>
             <Button.Label>
@@ -38,8 +37,12 @@ export function PersonalMenu({ meritPoints, onOpenTransfer }: PersonalMenuProps)
         </div>
       )}
     >
-      <button type="button" className={styles.trigger} aria-label="Menu cá nhân">
-        <Avatar size={40} icon={<UserOutlined />} className={styles.avatar} />
+      <button
+        type="button"
+        className="inline-flex cursor-pointer border-0 bg-transparent p-0 leading-none"
+        aria-label="Menu cá nhân"
+      >
+        <Avatar size={40} icon={<UserOutlined />} className="!bg-[#6b4423]" />
       </button>
     </Dropdown>
   );

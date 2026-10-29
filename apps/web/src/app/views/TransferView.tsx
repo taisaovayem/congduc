@@ -1,7 +1,6 @@
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { TransferPanel } from '@/modules/transfer/components/TransferPanel';
 import { Button } from '@/shared/components/ui/Button';
-import styles from './TransferView.module.scss';
 
 interface TransferViewProps {
   meritPoints: string;
@@ -10,8 +9,8 @@ interface TransferViewProps {
 
 export function TransferView({ meritPoints, onBack }: TransferViewProps) {
   return (
-    <div className={styles.wrap}>
-      <Button variant="ghost" onClick={onBack} className={styles.back}>
+    <div className="flex flex-col gap-3">
+      <Button variant="ghost" onClick={onBack} className="self-start">
         <Button.Label>
           <ArrowLeftOutlined /> Quay lại
         </Button.Label>

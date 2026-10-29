@@ -4,7 +4,6 @@ import { PersonalMenu } from '@/modules/account/components/PersonalMenu';
 import { useAccountProfile, useEnsureSession } from '@/modules/account/hooks/use-account-session';
 import { HomeView } from '@/app/views/HomeView';
 import { TransferView } from '@/app/views/TransferView';
-import styles from './App.module.scss';
 
 const { Header, Content } = Layout;
 
@@ -27,18 +26,15 @@ export function App() {
   const loading = ensureSession.isPending || isLoading;
 
   return (
-    <Layout className={styles.layout}>
-      <Header className={styles.header}>
-        <Typography.Title level={3} className={styles.title}>
-          Công Đức
-        </Typography.Title>
+    <Layout className="flex min-h-screen flex-col bg-transparent">
+      <Header className="flex items-center justify-end gap-4 bg-transparent px-6">
         {!loading ? (
           <PersonalMenu meritPoints={meritPoints} onOpenTransfer={() => setScreen('transfer')} />
         ) : null}
       </Header>
-      <Content className={styles.content}>
+      <Content className="mx-auto flex w-full max-w-[720px] flex-1 flex-col px-4 pb-12 pt-6">
         {loading ? (
-          <div className={styles.loading}>
+          <div className="flex justify-center p-12">
             <Spin size="large" tip="Đang khởi tạo tài khoản thiết bị…" />
           </div>
         ) : screen === 'home' ? (
