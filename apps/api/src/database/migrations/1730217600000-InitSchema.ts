@@ -147,7 +147,7 @@ export class InitSchema1730217600000 implements MigrationInterface {
             type: 'enum',
             enum: ['pending', 'completed', 'cancelled'],
             enumName: 'merit_transfers_status_enum',
-            default: 'pending',
+            default: `'pending'::"merit_transfers_status_enum"`,
             isNullable: false,
           },
           {
