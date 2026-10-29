@@ -1,0 +1,12 @@
+services:
+  web:
+    networks:
+      default: {}
+      web_network:
+        aliases:
+          - congduc-web
+
+networks:
+  web_network:
+    external: true
+    name: ${WEB_NETWORK:-web_network}

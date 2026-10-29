@@ -1,0 +1,23 @@
+services:
+  api:
+    build:
+      target: development
+    volumes:
+      - ./apps/api:/app/apps/api
+      - /app/apps/api/node_modules
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+
+  web:
+    build:
+      target: development
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+      VITE_WS_URL: ${VITE_WS_URL:-http://localhost:3000}
+    volumes:
+      - ./apps/web:/app/apps/web
+      - /app/apps/web/node_modules
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json

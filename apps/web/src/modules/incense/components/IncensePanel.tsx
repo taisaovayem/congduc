@@ -1,6 +1,4 @@
 import { useCallback } from "react";
-import { Button } from "@/shared/components/ui/Button";
-import { Card } from "@/shared/components/ui/Card";
 import { IncenseBurnerVisual } from "./IncenseBurnerVisual";
 import { useIncenseCountdown } from "../hooks/use-incense-countdown";
 import { useIncenseState, useStartIncense } from "../hooks/use-incense";
@@ -28,27 +26,19 @@ export function IncensePanel({ sessionReady, syncIncense }: IncensePanelProps) {
   const seconds = remaining % 60;
 
   return (
-    <>
+    <div className="relative">
       <IncenseBurnerVisual
         burning={active}
         startedAt={incenseState?.startedAt}
         endsAt={incenseState?.endsAt}
+        onStart={() => startIncense.mutate()}
+        startDisabled={!sessionReady || startIncense.isPending}
       />
       {active ? (
-        <p className="text-center text-white">
+        <p className="text-center text-white absilute bottom-0 text-sm">
           {minutes}:{seconds.toString().padStart(2, "0")}
         </p>
       ) : null}
-      {!active && (
-        <Button
-          variant="primary"
-          loading={startIncense.isPending}
-          disabled={Boolean(active)}
-          onClick={() => startIncense.mutate()}
-        >
-          <Button.Label>Thắp hương</Button.Label>
-        </Button>
-      )}
-    </>
+    </div>
   );
 }

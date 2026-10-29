@@ -8,6 +8,8 @@ interface IncenseBurnerVisualProps {
   burning: boolean;
   startedAt?: string;
   endsAt?: string;
+  onStart?: () => void;
+  startDisabled?: boolean;
 }
 
 const MAX_BODY_PX = 160;
@@ -20,7 +22,13 @@ const SMOKE_WISPS = [
   'h-[90px] w-1.5 animate-smoke-a [animation-delay:3.4s] [animation-direction:reverse]',
 ] as const;
 
-export function IncenseBurnerVisual({ burning, startedAt, endsAt }: IncenseBurnerVisualProps) {
+export function IncenseBurnerVisual({
+  burning,
+  startedAt,
+  endsAt,
+  onStart,
+  startDisabled = false,
+}: IncenseBurnerVisualProps) {
   const bodyRatio = useIncenseBurnProgress(burning, startedAt, endsAt);
   const { pops, spawn } = useMeritPops();
   useMeritPopInterval(burning, spawn, 60_000, 60);
@@ -28,8 +36,11 @@ export function IncenseBurnerVisual({ burning, startedAt, endsAt }: IncenseBurne
   const bodyHeight = Math.round(MAX_BODY_PX * bodyRatio);
   const showStick = burning && bodyRatio > 0.01;
 
-  return (
-    <div className="relative mx-auto mb-4 w-full max-w-[220px]" aria-hidden>
+  const idleButtonClass =
+    'relative mx-auto mb-4 block w-full max-w-[220px] cursor-pointer rounded-xl border-0 bg-transparent p-0 leading-none outline-none transition-[transform,opacity] duration-75 select-none [-webkit-tap-highlight-color:transparent] hover:enabled:scale-[1.02] active:enabled:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:outline-none focus-visible:shadow-none';
+
+  const inner = (
+    <>
       <MeritPopOverlay pops={pops} anchor="incense" />
       <svg className="absolute h-0 w-0 overflow-hidden" aria-hidden focusable="false">
         <defs>
@@ -86,6 +97,26 @@ export function IncenseBurnerVisual({ burning, startedAt, endsAt }: IncenseBurne
           </div>
         </div>
       ) : null}
-    </div>
+    </>
+  );
+
+  if (burning) {
+    return (
+      <div className="relative mx-auto mb-4 w-full max-w-[220px]" aria-hidden>
+        {inner}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={idleButtonClass}
+      onClick={onStart}
+      disabled={startDisabled || !onStart}
+      aria-label="Thắp hương"
+    >
+      {inner}
+    </button>
   );
 }
