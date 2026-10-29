@@ -1,0 +1,17 @@
+{
+  "name": "congduc",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev -w @congduc/api",
+    "dev:web": "npm run dev -w @congduc/web",
+    "build": "npm run build -w @congduc/api && npm run build -w @congduc/web",
+    "migration:run": "npm run migration:run -w @congduc/api",
+    "migration:generate": "npm run migration:generate -w @congduc/api"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
