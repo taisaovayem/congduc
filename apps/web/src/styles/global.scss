@@ -16,6 +16,12 @@ html {
     height: 100%;
     overscroll-behavior: none;
   }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
 }
 
 body {
@@ -55,6 +61,6 @@ body::before {
     height: 90svh;
     max-height: 90svh;
     min-height: unset;
-    overflow: hidden;
+    overflow: visible;
   }
 }

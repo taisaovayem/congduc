@@ -79,7 +79,7 @@ export function IncenseBurnerVisual({
       />
 
       {showStick ? (
-        <div className="absolute bottom-[64%] left-1/2 z-[2] flex -translate-x-1/2 flex-col items-center justify-center">
+        <div className="absolute bottom-[56%] left-1/2 z-[2] flex -translate-x-1/2 flex-col items-center justify-center md:bottom-[64%]">
           <div className="pointer-events-none relative z-[4] mb-[-8px] h-[132px] w-16 overflow-visible">
             {SMOKE_WISPS.map((className, index) => (
               <span key={index} className={clsx('incense-smoke-wisp', className)} />

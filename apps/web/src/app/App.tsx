@@ -37,7 +37,7 @@ export function App() {
         className={clsx(
           'mx-auto flex w-full max-w-[720px] min-h-0 flex-1 flex-col px-4 pb-12 pt-6',
           'max-md:pb-3 max-md:pt-2',
-          screen === 'home' ? 'max-md:overflow-hidden' : 'max-md:overflow-y-auto',
+          screen === 'home' ? 'max-md:overflow-visible' : 'max-md:overflow-y-auto',
         )}
       >
         {loading ? (
