@@ -47,6 +47,8 @@ docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
 
 Production **không publish port ra host** — `postgres`, `api`, `web` chỉ giao tiếp trên network Docker; `web` thêm `web_network` để `nginx-proxy` truy cập `http://congduc-web:80`. Không đụng `3000` / `8080` / `5432` trên máy host.
 
+Mọi service dùng `restart: unless-stopped` — container tự chạy lại khi process lỗi hoặc sau khi Docker daemon / máy reboot (trừ khi bạn đã `docker compose stop` / `down`).
+
 Kiểm tra:
 
 ```bash
