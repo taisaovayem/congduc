@@ -62,7 +62,10 @@ export class TransferService {
     };
   }
 
-  async joinReceiveTransfer(deviceId: string, transactionCode: string): Promise<{ transferId: string }> {
+  async joinReceiveTransfer(
+    deviceId: string,
+    transactionCode: string,
+  ): Promise<{ transferId: string; amount: string }> {
     const receiver = await this.accountService.requireAccountByDeviceId(deviceId);
     const transfer = await this.transferRepository.findByTransactionCode(transactionCode);
     if (!transfer || transfer.status !== TransferStatus.PENDING) {
@@ -77,7 +80,58 @@ export class TransferService {
 
     transfer.receiverAccountId = receiver.id;
     await this.transferRepository.save(transfer);
-    return { transferId: transfer.id };
+    return { transferId: transfer.id, amount: transfer.amount };
+  }
+
+  async getTransferStatus(
+    deviceId: string,
+    transactionCode: string,
+  ): Promise<{
+    status: TransferStatus;
+    amount: string;
+    senderConfirmed: boolean;
+    receiverConfirmed: boolean;
+  }> {
+    const account = await this.accountService.requireAccountByDeviceId(deviceId);
+    const transfer = await this.transferRepository.findByTransactionCode(transactionCode);
+    if (!transfer) {
+      throw new NotFoundException('Không tìm thấy giao dịch');
+    }
+    const isSender = transfer.senderAccountId === account.id;
+    const isReceiver = transfer.receiverAccountId === account.id;
+    if (!isSender && !isReceiver) {
+      throw new ForbiddenException('Bạn không tham gia giao dịch này');
+    }
+    return {
+      status: transfer.status,
+      amount: transfer.amount,
+      senderConfirmed: transfer.senderConfirmed,
+      receiverConfirmed: transfer.receiverConfirmed,
+    };
+  }
+
+  async cancelTransfer(
+    deviceId: string,
+    transactionCode: string,
+    confirmationCode: string,
+  ): Promise<{ status: TransferStatus }> {
+    const account = await this.accountService.requireAccountByDeviceId(deviceId);
+    const transfer = await this.transferRepository.findByTransactionCode(transactionCode);
+    if (!transfer || transfer.status !== TransferStatus.PENDING) {
+      throw new NotFoundException('Không tìm thấy giao dịch');
+    }
+    if (transfer.confirmationCode !== confirmationCode) {
+      throw new BadRequestException('Mã xác nhận không đúng');
+    }
+    const isSender = transfer.senderAccountId === account.id;
+    const isReceiver = transfer.receiverAccountId === account.id;
+    if (!isSender && !isReceiver) {
+      throw new ForbiddenException('Bạn không tham gia giao dịch này');
+    }
+
+    transfer.status = TransferStatus.CANCELLED;
+    await this.transferRepository.save(transfer);
+    return { status: TransferStatus.CANCELLED };
   }
 
   async confirmTransfer(

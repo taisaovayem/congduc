@@ -36,3 +36,15 @@ export interface ConfirmTransferResponse {
   status: 'pending' | 'completed' | 'cancelled';
   meritPoints: string;
 }
+
+export interface JoinReceiveTransferResponse {
+  transferId: string;
+  amount: string;
+}
+
+export interface TransferStatusResponse {
+  status: 'pending' | 'completed' | 'cancelled';
+  amount: string;
+  senderConfirmed: boolean;
+  receiverConfirmed: boolean;
+}

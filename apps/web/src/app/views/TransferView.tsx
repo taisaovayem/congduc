@@ -15,7 +15,7 @@ export function TransferView({ meritPoints, onBack }: TransferViewProps) {
           <ArrowLeftOutlined /> Quay lại
         </Button.Label>
       </Button>
-      <TransferPanel meritPoints={meritPoints} />
+      <TransferPanel meritPoints={meritPoints} onDone={onBack} />
     </div>
   );
 }
