@@ -37,7 +37,7 @@ export function IncenseBurnerVisual({
   const showStick = burning && bodyRatio > 0.01;
 
   const idleButtonClass =
-    'relative mx-auto mb-4 block w-full max-w-[220px] cursor-pointer rounded-xl border-0 bg-transparent p-0 leading-none outline-none transition-[transform,opacity] duration-75 select-none [-webkit-tap-highlight-color:transparent] hover:enabled:scale-[1.02] active:enabled:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:outline-none focus-visible:shadow-none';
+    'relative mx-auto mb-1 block w-full max-w-[220px] cursor-pointer rounded-xl border-0 bg-transparent p-0 leading-none outline-none transition-[transform,opacity] duration-75 select-none [-webkit-tap-highlight-color:transparent] hover:enabled:scale-[1.02] active:enabled:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:outline-none focus-visible:shadow-none md:mb-4';
 
   const inner = (
     <>
@@ -102,7 +102,7 @@ export function IncenseBurnerVisual({
 
   if (burning) {
     return (
-      <div className="relative mx-auto mb-4 w-full max-w-[220px]" aria-hidden>
+      <div className="relative mx-auto mb-1 w-full max-w-[220px] md:mb-4" aria-hidden>
         {inner}
       </div>
     );

@@ -9,9 +9,19 @@ html {
   touch-action: manipulation;
 }
 
+@media (width <= 767px) {
+  html,
+  body {
+    overflow: hidden;
+    height: 100%;
+    overscroll-behavior: none;
+  }
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   touch-action: manipulation;
   background-color: #1a120c;
   background-image: url('../assets/images/chua.webp');
@@ -20,6 +30,10 @@ body {
   background-repeat: no-repeat;
   background-attachment: fixed;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  @media (width <= 767px) {
+    background-attachment: scroll;
+  }
 }
 
 body::before {
@@ -35,4 +49,12 @@ body::before {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  min-height: 100dvh;
+
+  @media (width <= 767px) {
+    height: 90svh;
+    max-height: 90svh;
+    min-height: unset;
+    overflow: hidden;
+  }
 }
