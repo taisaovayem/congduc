@@ -5,6 +5,7 @@ import { MeritLedgerModule } from '../merit-ledger/merit-ledger.module';
 import { AccountController } from './account.controller';
 import { AccountService } from './account.service';
 import { EnsureSessionHandler } from './commands/ensure-session.handler';
+import { UpdateNicknameHandler } from './commands/update-nickname.handler';
 import { AccountEntity } from './entities/account.entity';
 import { GetAccountProfileHandler } from './queries/get-account-profile.handler';
 import { AccountRepository } from './repositories/account.repository';
@@ -16,6 +17,7 @@ import { AccountRepository } from './repositories/account.repository';
     AccountRepository,
     AccountService,
     EnsureSessionHandler,
+    UpdateNicknameHandler,
     GetAccountProfileHandler,
   ],
   exports: [AccountRepository, AccountService],

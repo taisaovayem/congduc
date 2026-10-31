@@ -11,3 +11,11 @@ export function ensureSession(deviceId: string | null) {
 export function fetchAccountProfile(deviceId: string) {
   return apiFetch<AccountProfile>('/accounts/me', { deviceId });
 }
+
+export function updateAccountNickname(deviceId: string, nickname: string) {
+  return apiFetch<AccountProfile>('/accounts/me/nickname', {
+    method: 'PATCH',
+    deviceId,
+    body: JSON.stringify({ nickname }),
+  });
+}

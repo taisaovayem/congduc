@@ -17,6 +17,9 @@ export class AccountEntity {
   @Column({ name: 'device_id', type: 'uuid', unique: true })
   deviceId!: string;
 
+  @Column({ type: 'varchar', length: 32 })
+  nickname!: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

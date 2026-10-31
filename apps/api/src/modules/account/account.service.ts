@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { MeritLedgerService } from '../merit-ledger/merit-ledger.service';
 import { AccountEntity } from './entities/account.entity';
@@ -7,6 +7,7 @@ import { AccountRepository } from './repositories/account.repository';
 export interface AccountProfile {
   id: string;
   deviceId: string;
+  nickname: string;
   meritPoints: string;
 }
 
@@ -35,6 +36,16 @@ export class AccountService {
     return this.toProfile(account);
   }
 
+  async updateNickname(deviceId: string, nickname: string): Promise<AccountProfile> {
+    const account = await this.requireAccountByDeviceId(deviceId);
+    const trimmed = nickname.trim();
+    if (trimmed.length === 0) {
+      throw new BadRequestException('Biệt danh không được để trống.');
+    }
+    const updated = await this.accountRepository.updateNickname(account.id, trimmed);
+    return this.toProfile(updated);
+  }
+
   async requireAccountByDeviceId(deviceId: string): Promise<AccountEntity> {
     const account = await this.accountRepository.findByDeviceId(deviceId);
     if (!account) {
@@ -48,6 +59,7 @@ export class AccountService {
     return {
       id: account.id,
       deviceId: account.deviceId,
+      nickname: account.nickname,
       meritPoints,
     };
   }

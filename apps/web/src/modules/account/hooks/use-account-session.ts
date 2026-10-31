@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getStoredDeviceId, setStoredDeviceId } from '@/shared/storage/device-session';
-import { ensureSession, fetchAccountProfile } from '../api/account-api';
+import { ensureSession, fetchAccountProfile, updateAccountNickname } from '../api/account-api';
 
 export const accountQueryKey = ['account', 'me'] as const;
 
@@ -26,5 +26,21 @@ export function useAccountProfile(enabled: boolean) {
     queryFn: () => fetchAccountProfile(deviceId!),
     enabled: enabled && Boolean(deviceId),
     refetchInterval: 5000,
+  });
+}
+
+export function useUpdateNickname() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (nickname: string) => {
+      const deviceId = getStoredDeviceId();
+      if (!deviceId) {
+        throw new Error('Chưa có phiên thiết bị');
+      }
+      return updateAccountNickname(deviceId, nickname);
+    },
+    onSuccess: (account) => {
+      queryClient.setQueryData(accountQueryKey, account);
+    },
   });
 }

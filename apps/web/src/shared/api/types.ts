@@ -1,6 +1,7 @@
 export interface AccountProfile {
   id: string;
   deviceId: string;
+  nickname: string;
   meritPoints: string;
 }
 
