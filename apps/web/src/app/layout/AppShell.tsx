@@ -24,11 +24,22 @@ export function AppShell() {
   const meritPoints = account?.meritPoints ?? '0';
   const loading = ensureSession.isPending || isLoading;
   const isHome = location.pathname === '/';
-  const isScrollablePage = !isHome;
+  const isSongTuRoom = location.pathname.startsWith('/song-tu/phong');
+  const isScrollablePage = !isHome && !isSongTuRoom;
 
   return (
-    <Layout className="flex h-full min-h-0 flex-col bg-transparent md:min-h-screen">
-      <Header className="!h-auto flex items-center justify-end gap-3 bg-transparent px-6 py-3 max-md:!px-3 max-md:py-2">
+    <Layout
+      className={clsx(
+        'flex min-h-0 flex-col bg-transparent md:min-h-screen',
+        isSongTuRoom ? 'song-tu-room-layout h-full max-md:h-[90svh] max-md:max-h-[90svh]' : 'h-full',
+      )}
+    >
+      <Header
+        className={clsx(
+          '!h-auto flex shrink-0 items-center justify-end gap-3 bg-transparent px-6 py-3',
+          isSongTuRoom ? 'max-md:!px-2 max-md:py-1' : 'max-md:!px-3 max-md:py-2',
+        )}
+      >
         {!loading ? (
           <div className="flex w-10 flex-col items-center gap-1">
             <PersonalMenu nickname={account?.nickname ?? ''} meritPoints={meritPoints} />
@@ -39,8 +50,10 @@ export function AppShell() {
       <Content
         className={clsx(
           'mx-auto flex w-full min-h-0 flex-1 flex-col px-4 pb-12 pt-6',
-          location.pathname.startsWith('/song-tu/phong') ? 'max-w-[900px]' : 'max-w-[720px]',
-          'max-md:pb-3 max-md:pt-2',
+          isSongTuRoom ? 'max-w-[900px]' : 'max-w-[720px]',
+          isSongTuRoom
+            ? 'max-md:overflow-hidden max-md:px-2 max-md:pb-1 max-md:pt-0'
+            : 'max-md:pb-3 max-md:pt-2',
           isScrollablePage ? 'max-md:overflow-y-auto max-md:min-h-0' : 'max-md:overflow-visible',
         )}
       >

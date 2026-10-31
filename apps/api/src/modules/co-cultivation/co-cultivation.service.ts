@@ -124,10 +124,10 @@ export class CoCultivationService implements OnModuleInit {
   ): Promise<CoCultivationRoomView> {
     const account = await this.accountService.requireAccountByDeviceId(deviceId);
     const room = await this.requireRoom(roomId);
-    await this.verifyPassword(room.passwordHash, password);
 
     const existing = await this.repository.findMember(roomId, account.id);
     if (!existing) {
+      await this.verifyPassword(room.passwordHash, password);
       const roomStillOpen = await this.repository.findRoomById(roomId);
       if (!roomStillOpen) {
         throw new NotFoundException('Phòng không còn tồn tại');
@@ -164,7 +164,15 @@ export class CoCultivationService implements OnModuleInit {
     }
 
     if (latestRoom.status === CoCultivationRoomStatus.ACTIVE) {
-      await this.repository.updateMember(roomId, account.id, { isParticipating: true });
+      await this.repository.updateMember(roomId, account.id, {
+        isParticipating: true,
+        isReady: true,
+      });
+      try {
+        await this.broadcastRoomState(roomId, account.id);
+      } catch {
+        /* phòng có thể vừa giải tán */
+      }
     }
 
     return this.buildRoomView(roomId, account.id);

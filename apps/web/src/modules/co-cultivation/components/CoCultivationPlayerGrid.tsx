@@ -40,7 +40,7 @@ export function CoCultivationPlayerGrid({
   };
 
   return (
-    <ul className="mx-auto grid max-w-[560px] list-none grid-cols-[repeat(auto-fill,minmax(88px,1fr))] justify-center gap-3 p-0">
+    <ul className="mx-auto grid max-w-[560px] list-none grid-cols-[repeat(auto-fill,minmax(72px,1fr))] justify-center gap-2 p-0 max-md:gap-1.5 md:grid-cols-[repeat(auto-fill,minmax(88px,1fr))] md:gap-3">
       {members.map((member) => {
         const pops = popsByAccount.get(member.accountId) ?? [];
         const kickable = canHostKick(member);
@@ -73,7 +73,7 @@ export function CoCultivationPlayerGrid({
                 size={48}
                 icon={<UserOutlined />}
                 className={clsx(
-                  '!bg-[#6b4423]',
+                  '!bg-[#6b4423] max-md:!h-10 max-md:!w-10 max-md:!text-base',
                   member.accountId === myAccountId && '!ring-2 !ring-[#c9a227]',
                   kickable && 'ring-2 ring-white/40',
                 )}

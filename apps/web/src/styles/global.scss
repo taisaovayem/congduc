@@ -57,6 +57,12 @@ body::before {
   }
 }
 
+@media (width <= 767px) {
+  .song-tu-room-layout #root {
+    justify-content: flex-start;
+  }
+}
+
 #root {
   position: relative;
   z-index: 1;

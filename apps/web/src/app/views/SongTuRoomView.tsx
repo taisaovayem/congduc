@@ -3,11 +3,12 @@ import {
   CloseOutlined,
   LockOutlined,
   LogoutOutlined,
-  ShareAltOutlined
+  ShareAltOutlined,
 } from '@ant-design/icons';
 import { App, Input, Modal, Spin, Tag } from 'antd';
+import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import type { AppShellContext } from '@/app/layout/AppShell';
 import { CoCultivationPlayerGrid } from '@/modules/co-cultivation/components/CoCultivationPlayerGrid';
 import { useCoCultivationRoomSocket } from '@/modules/co-cultivation/hooks/use-co-cultivation-room-socket';
@@ -19,8 +20,10 @@ import { getStoredDeviceId } from '@/shared/storage/device-session';
 
 export function SongTuRoomView() {
   const { roomId } = useParams<{ roomId: string }>();
+  const location = useLocation();
   const { message } = App.useApp();
   const navigate = useNavigate();
+  const initialRoomPassword = (location.state as { roomPassword?: string } | null)?.roomPassword;
   const { sessionReady } = useOutletContext<AppShellContext>();
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [joinPassword, setJoinPassword] = useState('');
@@ -37,7 +40,11 @@ export function SongTuRoomView() {
     leaveRoomSocket,
     kickMember,
     hitMok,
-  } = useCoCultivationRoomSocket(roomId, sessionReady && !joining, roomPassword);
+  } = useCoCultivationRoomSocket(
+    roomId,
+    sessionReady && !joining && !passwordModalOpen,
+    roomPassword ?? initialRoomPassword,
+  );
 
   useEffect(() => {
     if (!sessionReady || !roomId) {
@@ -51,8 +58,12 @@ export function SongTuRoomView() {
     let cancelled = false;
     void (async () => {
       try {
-        await joinCoCultivationById(deviceId, roomId);
+        const pwd = initialRoomPassword;
+        await joinCoCultivationById(deviceId, roomId, pwd);
         if (!cancelled) {
+          if (pwd) {
+            setRoomPassword(pwd);
+          }
           setJoining(false);
         }
       } catch (err) {
@@ -60,12 +71,11 @@ export function SongTuRoomView() {
           return;
         }
         if (err instanceof ApiError && err.status === 403) {
+          setJoining(false);
           setPasswordModalOpen(true);
           return;
         }
-        message.error(
-          err instanceof ApiError ? err.message : 'Không vào được phòng',
-        );
+        message.error(err instanceof ApiError ? err.message : 'Không vào được phòng');
         navigate('/song-tu');
       }
     })();
@@ -73,7 +83,7 @@ export function SongTuRoomView() {
     return () => {
       cancelled = true;
     };
-  }, [roomId, sessionReady]);
+  }, [roomId, sessionReady, initialRoomPassword, message, navigate]);
 
   useEffect(() => {
     if (kicked) {
@@ -135,16 +145,16 @@ export function SongTuRoomView() {
   const practiceActive = room?.status === 'active';
   const isHost = room?.hostAccountId === room?.myAccountId;
 
-  if (joining && !room) {
-    return (
-      <div className="song-tu-ui flex justify-center py-16 text-white">
-        <Spin size="large" tip="Đang vào phòng…" />
-      </div>
-    );
-  }
+  const showJoinSpinner = joining && !room && !passwordModalOpen;
 
   return (
-    <div className="song-tu-ui flex min-h-0 flex-1 flex-col gap-4 pb-6 text-white">
+    <div className="song-tu-ui song-tu-room flex h-full min-h-0 flex-1 flex-col text-white">
+      {showJoinSpinner ? (
+        <div className="flex flex-1 justify-center py-16">
+          <Spin size="large" tip="Đang vào phòng…" />
+        </div>
+      ) : null}
+
       <Modal
         title="Phòng có mật khẩu"
         open={passwordModalOpen}
@@ -160,42 +170,63 @@ export function SongTuRoomView() {
         />
       </Modal>
 
-      {room ? (
+      {!showJoinSpinner && room ? (
         <>
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <h1 className="m-0 flex items-center gap-2 text-lg font-bold text-white">
-                {room.name}
-                {room.hasPassword ? <LockOutlined className="text-sm text-white/70" /> : null}
-              </h1>
-              <p className="m-0 mt-1 text-sm text-white/90">
-                Mã phòng <strong className="text-white">{room.roomCode}</strong>
-                <Tag className="ml-2" color={room.status === 'active' ? 'green' : 'default'}>
-                  {room.status === 'active' ? 'Đang song tu' : 'Đang chờ'}
-                </Tag>
-              </p>
+          <header className="shrink-0 space-y-1 max-md:space-y-0.5 md:space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <h1 className="m-0 flex items-center gap-1.5 truncate text-base font-bold md:text-lg">
+                  {room.name}
+                  {room.hasPassword ? (
+                    <LockOutlined className="shrink-0 text-xs text-white/70 md:text-sm" />
+                  ) : null}
+                </h1>
+                <p className="m-0 mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-white/85 md:text-sm">
+                  <span>
+                    Mã <strong className="text-white">{room.roomCode}</strong>
+                  </span>
+                  <Tag
+                    className="!m-0 !text-[10px] !leading-tight md:!text-xs"
+                    color={room.status === 'active' ? 'green' : 'default'}
+                  >
+                    {room.status === 'active' ? 'Đang song tu' : 'Chờ'}
+                  </Tag>
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-1 md:gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => void handleCopyLink()}
+                  icon={<ShareAltOutlined />}
+                  aria-label="Chia sẻ"
+                  className="max-md:min-h-9 max-md:min-w-9 max-md:px-2"
+                >
+                  <span className="hidden md:inline">
+                    <Button.Label>Chia sẻ</Button.Label>
+                  </span>
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => void handleLeave()}
+                  icon={<LogoutOutlined />}
+                  aria-label="Rời phòng"
+                  className="max-md:min-h-9 max-md:min-w-9 max-md:px-2"
+                >
+                  <span className="hidden md:inline">
+                    <Button.Label>Rời phòng</Button.Label>
+                  </span>
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" onClick={() => void handleCopyLink()} icon={<ShareAltOutlined />}>
-                <Button.Label>
-                  Chia sẻ
-                </Button.Label>
-              </Button>
-              <Button variant="secondary" onClick={() => void handleLeave()} icon={<LogoutOutlined />}>
-                <Button.Label>
-                  Rời phòng
-                </Button.Label>
-              </Button>
-            </div>
-          </div>
 
-          <div className="py-2 text-center">
-            <div className="song-tu-team-merit text-3xl font-extrabold tracking-wide">
-              {room.teamMeritHits}
+            <div className="py-0.5 text-center md:py-2">
+              <div className="song-tu-team-merit text-2xl font-extrabold tracking-wide md:text-3xl">
+                {room.teamMeritHits}
+              </div>
             </div>
-          </div>
+          </header>
 
-          <div className="flex flex-1 flex-col justify-center py-2">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1 md:flex md:flex-col md:justify-center md:py-2">
             <CoCultivationPlayerGrid
               members={room.members}
               myAccountId={room.myAccountId}
@@ -206,45 +237,53 @@ export function SongTuRoomView() {
             />
           </div>
 
-          {room.status === 'waiting' && isHost ? (
-            <Button block onClick={() => startPractice()}>
-              <Button.Label>Bắt đầu song tu</Button.Label>
-            </Button>
-          ) : null}
+          <footer className="shrink-0 space-y-2 pt-1 max-md:space-y-1.5 md:pt-2">
+            {room.status === 'waiting' && isHost ? (
+              <Button block onClick={() => startPractice()} className="max-md:min-h-9">
+                <Button.Label>Bắt đầu song tu</Button.Label>
+              </Button>
+            ) : null}
 
-          {room.status === 'waiting' && !isHost ? (
-            <Button
-              block
-              onClick={() => setReady(!me?.isReady)}
-              variant={me?.isReady ? 'secondary' : 'primary'}
+            {room.status === 'waiting' && !isHost ? (
+              <Button
+                block
+                onClick={() => setReady(!me?.isReady)}
+                variant={me?.isReady ? 'secondary' : 'primary'}
+                className="max-md:min-h-9"
+              >
+                <Button.Label>
+                  {me?.isReady ? (
+                    <>
+                      <CloseOutlined /> Bỏ sẵn sàng
+                    </>
+                  ) : (
+                    <>
+                      <CheckOutlined /> Sẵn sàng
+                    </>
+                  )}
+                </Button.Label>
+              </Button>
+            ) : null}
+
+            <div
+              className={clsx(
+                'mx-auto w-fit max-md:-mb-1',
+                '[&_img]:max-md:!w-[112px]',
+              )}
             >
-              <Button.Label>
-                {me?.isReady ? (
-                  <>
-                    <CloseOutlined /> Bỏ sẵn sàng
-                  </>
-                ) : (
-                  <>
-                    <CheckOutlined /> Sẵn sàng
-                  </>
-                )}
-              </Button.Label>
-            </Button>
-          ) : null}
-
-          <div className="mt-auto translate-y-2 md:translate-y-0">
-            <SongTuMokPanel
-              socketConnected={connected}
-              practiceActive={practiceActive}
-              onHit={hitMok}
-            />
-          </div>
+              <SongTuMokPanel
+                socketConnected={connected}
+                practiceActive={practiceActive}
+                onHit={hitMok}
+              />
+            </div>
+          </footer>
         </>
-      ) : (
-        <div className="flex justify-center py-12 text-white">
+      ) : !showJoinSpinner && !passwordModalOpen ? (
+        <div className="flex flex-1 justify-center py-12">
           <Spin tip="Đang đồng bộ phòng…" />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -30,7 +30,10 @@ export function SongTuLobbyView() {
   const [joinCode, setJoinCode] = useState('');
   const [joinPassword, setJoinPassword] = useState('');
 
-  const goRoom = (roomId: string) => navigate(`/song-tu/phong/${roomId}`);
+  const goRoom = (roomId: string, roomPassword?: string) =>
+    navigate(`/song-tu/phong/${roomId}`, {
+      state: roomPassword ? { roomPassword } : undefined,
+    });
 
   const closeModal = () => setActiveModal(null);
 
@@ -43,7 +46,7 @@ export function SongTuLobbyView() {
       closeModal();
       setCreateName('');
       setCreatePassword('');
-      goRoom(room.id);
+      goRoom(room.id, createPassword.trim() || undefined);
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Không tạo được phòng');
     }
@@ -58,7 +61,7 @@ export function SongTuLobbyView() {
       closeModal();
       setJoinCode('');
       setJoinPassword('');
-      goRoom(room.id);
+      goRoom(room.id, joinPassword.trim() || undefined);
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Không tham gia được phòng');
     }
