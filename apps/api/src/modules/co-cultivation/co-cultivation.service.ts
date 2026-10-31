@@ -397,6 +397,10 @@ export class CoCultivationService implements OnModuleInit {
         room.sessionId,
       );
       await this.repository.incrementSessionParticipantStats(room.sessionId, accountId, 0n, bonus);
+      const bonusAmount = Number(bonus);
+      if (bonusAmount > 0) {
+        this.meritPopListener?.(roomId, accountId, bonusAmount);
+      }
     }
 
     const teamMeritHits = await this.getTeamMeritHitsDisplay(roomId);
