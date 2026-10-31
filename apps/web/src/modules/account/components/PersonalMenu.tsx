@@ -1,6 +1,7 @@
 import { EditOutlined, SwapOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Dropdown } from 'antd';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUpdateNickname } from '@/modules/account/hooks/use-account-session';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
@@ -8,10 +9,10 @@ import { Input } from '@/shared/components/ui/Input';
 interface PersonalMenuProps {
   nickname: string;
   meritPoints: string;
-  onOpenTransfer: () => void;
 }
 
-export function PersonalMenu({ nickname, meritPoints, onOpenTransfer }: PersonalMenuProps) {
+export function PersonalMenu({ nickname, meritPoints }: PersonalMenuProps) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [editingNickname, setEditingNickname] = useState(false);
   const [draftNickname, setDraftNickname] = useState(nickname);
@@ -25,7 +26,7 @@ export function PersonalMenu({ nickname, meritPoints, onOpenTransfer }: Personal
 
   const handleOpenTransfer = () => {
     setOpen(false);
-    onOpenTransfer();
+    navigate('/chuyen-cong-duc');
   };
 
   const handleStartEditNickname = () => {

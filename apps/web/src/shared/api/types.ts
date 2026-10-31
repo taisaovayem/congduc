@@ -43,6 +43,40 @@ export interface JoinReceiveTransferResponse {
   amount: string;
 }
 
+export type CoCultivationRoomStatus = 'waiting' | 'active';
+
+export interface CoCultivationRoomListItem {
+  id: string;
+  roomCode: string;
+  name: string;
+  hasPassword: boolean;
+  status: CoCultivationRoomStatus;
+  memberCount: number;
+  createdAt: string;
+}
+
+export interface CoCultivationMemberView {
+  accountId: string;
+  nickname: string;
+  isHost: boolean;
+  isReady: boolean;
+  isParticipating: boolean;
+  personalMeritHits: string;
+}
+
+export interface CoCultivationRoomView {
+  id: string;
+  roomCode: string;
+  name: string;
+  hasPassword: boolean;
+  status: CoCultivationRoomStatus;
+  hostAccountId: string;
+  teamMeritHits: string;
+  members: CoCultivationMemberView[];
+  myAccountId: string;
+  myMeritPoints: string;
+}
+
 export interface TransferStatusResponse {
   status: 'pending' | 'completed' | 'cancelled';
   amount: string;

@@ -19,6 +19,16 @@
   .merit-pop--incense {
     bottom: 78%;
   }
+
+  .song-tu-team-merit {
+    color: #f5d878;
+    text-shadow:
+      0 0 8px rgb(255 220 120 / 95%),
+      0 0 18px rgb(232 176 32 / 85%),
+      0 0 28px rgb(201 148 15 / 55%),
+      0 2px 8px rgb(0 0 0 / 85%),
+      0 1px 0 rgb(139 90 0 / 90%);
+  }
 }
 
 @keyframes merit-pop-rise {

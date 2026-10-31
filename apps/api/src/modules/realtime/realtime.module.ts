@@ -19,6 +19,6 @@ import { WsDeviceIdGuard } from './ws-device-id.guard';
     MokService,
     HitMokHandler,
   ],
-  exports: [RealtimeGateway],
+  exports: [RealtimeGateway, WsDeviceIdGuard],
 })
 export class RealtimeModule {}

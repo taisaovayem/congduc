@@ -51,6 +51,12 @@ body::before {
   background: rgb(15 10 8 / 52%);
 }
 
+.song-tu-ui {
+  .ant-spin-text {
+    color: rgb(255 255 255 / 90%) !important;
+  }
+}
+
 #root {
   position: relative;
   z-index: 1;

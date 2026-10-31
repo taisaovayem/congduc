@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ConfigProvider } from 'antd';
+import { App as AntApp, ConfigProvider } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import { ReactNode, useState } from 'react';
 
@@ -31,7 +31,7 @@ export function AppProviders({ children }: AppProvidersProps) {
           },
         }}
       >
-        {children}
+        <AntApp>{children}</AntApp>
       </ConfigProvider>
     </QueryClientProvider>
   );
