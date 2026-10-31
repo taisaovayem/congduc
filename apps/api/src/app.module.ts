@@ -5,6 +5,7 @@ import { AccountModule } from './modules/account/account.module';
 import { IncenseModule } from './modules/incense/incense.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { CoCultivationModule } from './modules/co-cultivation/co-cultivation.module';
+import { PkModule } from './modules/pk/pk.module';
 import { TransferModule } from './modules/transfer/transfer.module';
 import { typeOrmConfig } from './database/typeorm.config';
 
@@ -17,6 +18,7 @@ import { typeOrmConfig } from './database/typeorm.config';
     RealtimeModule,
     TransferModule,
     CoCultivationModule,
+    PkModule,
   ],
 })
 export class AppModule {}

@@ -106,9 +106,9 @@ export function PersonalMenu({ nickname, meritPoints }: PersonalMenuProps) {
             <dt className="mb-0.5 text-xs text-neutral-500">Công đức:</dt>
             <dd className="m-0 text-[22px] font-bold text-temple-ink">{meritPoints}</dd>
           </dl>
-          <Button variant="secondary" block onClick={handleOpenTransfer}>
+          <Button variant="secondary" block onClick={handleOpenTransfer} icon={<SwapOutlined />}>
             <Button.Label>
-              <SwapOutlined /> Chuyển công đức
+              Chuyển công đức
             </Button.Label>
           </Button>
         </div>

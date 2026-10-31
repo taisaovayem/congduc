@@ -1,6 +1,7 @@
 import {
   CheckOutlined,
   CloseOutlined,
+  CopyOutlined,
   LockOutlined,
   LogoutOutlined,
   ShareAltOutlined,
@@ -113,6 +114,18 @@ export function SongTuRoomView() {
     }
   };
 
+  const handleCopyRoomCode = async () => {
+    if (!room?.roomCode) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(room.roomCode);
+      message.success('Đã copy mã phòng');
+    } catch {
+      message.error('Không copy được mã phòng');
+    }
+  };
+
   const handleLeave = async () => {
     leaveRoomSocket();
     const deviceId = getStoredDeviceId();
@@ -182,8 +195,16 @@ export function SongTuRoomView() {
                   ) : null}
                 </h1>
                 <p className="m-0 mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-white/85 md:text-sm">
-                  <span>
+                  <span className="inline-flex items-center gap-1">
                     Mã <strong className="text-white">{room.roomCode}</strong>
+                    <button
+                      type="button"
+                      className="inline-flex cursor-pointer items-center border-0 bg-transparent p-0 text-white/75 hover:text-white"
+                      aria-label="Copy mã phòng"
+                      onClick={() => void handleCopyRoomCode()}
+                    >
+                      <CopyOutlined className="text-xs md:text-sm" />
+                    </button>
                   </span>
                   <Tag
                     className="!m-0 !text-[10px] !leading-tight md:!text-xs"

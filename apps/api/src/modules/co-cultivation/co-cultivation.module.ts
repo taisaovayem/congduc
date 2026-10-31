@@ -36,6 +36,6 @@ import { CoCultivationRepository } from './repositories/co-cultivation.repositor
     CoCultivationPresenceService,
     CoCultivationGateway,
   ],
-  exports: [CoCultivationService],
+  exports: [CoCultivationService, CoCultivationPresenceService],
 })
 export class CoCultivationModule {}

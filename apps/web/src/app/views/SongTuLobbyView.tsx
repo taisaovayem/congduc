@@ -1,4 +1,11 @@
-import { ArrowLeftOutlined, LockOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  LockOutlined,
+  LoginOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
 import { App, Modal, Spin, Tag } from 'antd';
 import { useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
@@ -19,7 +26,7 @@ export function SongTuLobbyView() {
   const { message } = App.useApp();
   const navigate = useNavigate();
   const { sessionReady } = useOutletContext<AppShellContext>();
-  const { data: rooms, isLoading } = useCoCultivationRooms(sessionReady);
+  const { data: rooms, isLoading, refetch, isFetching } = useCoCultivationRooms(sessionReady);
   const createRoom = useCreateCoCultivationRoom();
   const joinByCode = useJoinCoCultivationByCode();
   const quickJoin = useQuickJoinCoCultivation();
@@ -79,11 +86,21 @@ export function SongTuLobbyView() {
   return (
     <div className="song-tu-ui flex w-full flex-col gap-4 pb-8 text-white">
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="secondary" onClick={() => navigate('/')} icon={<ArrowLeftOutlined />}>
-          <Button.Label>
-            Trở về
-          </Button.Label>
-        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => navigate('/')}
+          icon={<ArrowLeftOutlined />}
+          aria-label="Trở về"
+          className="max-md:min-h-9 max-md:min-w-9 max-md:px-2"
+        />
+        <Button
+          variant="secondary"
+          onClick={() => void refetch()}
+          disabled={isFetching}
+          icon={<ReloadOutlined spin={isFetching} />}
+          aria-label="Làm mới danh sách"
+          className="max-md:min-h-9 max-md:min-w-9 max-md:px-2"
+        />
         <Button
           variant="secondary"
           onClick={() => void handleQuickJoin()}
@@ -92,7 +109,7 @@ export function SongTuLobbyView() {
         >
           <Button.Label>Tham gia nhanh</Button.Label>
         </Button>
-        <Button variant="secondary" onClick={() => setActiveModal('join')}>
+        <Button variant="secondary" onClick={() => setActiveModal('join')} icon={<LoginOutlined />}>
           <Button.Label>Tham gia</Button.Label>
         </Button>
         <Button onClick={() => setActiveModal('create')} icon={<PlusOutlined />}>

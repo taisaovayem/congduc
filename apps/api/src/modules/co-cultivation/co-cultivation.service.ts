@@ -346,23 +346,9 @@ export class CoCultivationService implements OnModuleInit {
       return;
     }
 
-    const bonusByAccount = new Map<string, bigint>();
-    for (const accountId of accountIds) {
-      bonusByAccount.set(accountId, 0n);
-    }
-
-    for (const [ hitterId, hits ] of hitsByAccount) {
-      const own = BigInt(hits);
-      if (own <= 0n) {
-        continue;
-      }
-      const bonusShare = BigInt(Math.floor(Number(own) * SONG_TU_BONUS_RATE));
-      for (const recipientId of accountIds) {
-        if (recipientId === hitterId) {
-          continue;
-        }
-        bonusByAccount.set(recipientId, (bonusByAccount.get(recipientId) ?? 0n) + bonusShare);
-      }
+    let blockHitsTotal = 0;
+    for (const hits of hitsByAccount.values()) {
+      blockHitsTotal += hits;
     }
 
     for (const [accountId, hits] of hitsByAccount) {
@@ -386,20 +372,30 @@ export class CoCultivationService implements OnModuleInit {
       this.pendingOwnHits.set(key, Math.max(0, pending - hits));
     }
 
-    for (const [accountId, bonus] of bonusByAccount) {
-      if (bonus <= 0n) {
-        continue;
-      }
-      await this.meritLedgerService.postCredit(
-        accountId,
-        bonus,
-        MeritLedgerEntryType.SONG_TU_BONUS,
-        room.sessionId,
-      );
-      await this.repository.incrementSessionParticipantStats(room.sessionId, accountId, 0n, bonus);
-      const bonusAmount = Number(bonus);
-      if (bonusAmount > 0) {
-        this.meritPopListener?.(roomId, accountId, bonusAmount);
+    const members = await this.repository.listMembers(roomId);
+    const participantIds = members.filter((m) => m.isParticipating).map((m) => m.accountId);
+    const bonusPool = BigInt(Math.floor(blockHitsTotal * SONG_TU_BONUS_RATE));
+    if (bonusPool > 0n && participantIds.length > 0) {
+      const eachBonus = bonusPool / BigInt(participantIds.length);
+      if (eachBonus > 0n) {
+        for (const accountId of participantIds) {
+          await this.meritLedgerService.postCredit(
+            accountId,
+            eachBonus,
+            MeritLedgerEntryType.SONG_TU_BONUS,
+            room.sessionId,
+          );
+          await this.repository.incrementSessionParticipantStats(
+            room.sessionId,
+            accountId,
+            0n,
+            eachBonus,
+          );
+          const bonusAmount = Number(eachBonus);
+          if (bonusAmount > 0) {
+            this.meritPopListener?.(roomId, accountId, bonusAmount);
+          }
+        }
       }
     }
 

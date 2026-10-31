@@ -46,9 +46,7 @@ export class MeritLedgerService {
     if (amount <= 0n) {
       throw new BadRequestException('Số công đức ghi nợ phải lớn hơn 0');
     }
-    const balances = await this.postLines([
-      { accountId, amount: -amount, entryType, referenceId },
-    ]);
+    const balances = await this.postLines([{ accountId, amount: -amount, entryType, referenceId }]);
     return balances.get(accountId) ?? (await this.getBalance(accountId));
   }
 
@@ -87,15 +85,8 @@ export class MeritLedgerService {
   }
 
   private async postLines(lines: PostLedgerLineInput[]): Promise<Map<string, string>> {
-    try {
-      return await this.dataSource.transaction((manager) =>
-        this.meritLedgerRepository.appendEntries(manager, lines),
-      );
-    } catch (err) {
-      if (err instanceof Error && err.message === 'Merit balance cannot be negative') {
-        throw new BadRequestException('Không đủ công đức');
-      }
-      throw err;
-    }
+    return this.dataSource.transaction((manager) =>
+      this.meritLedgerRepository.appendEntries(manager, lines),
+    );
   }
 }

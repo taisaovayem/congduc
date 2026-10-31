@@ -1,4 +1,4 @@
-import { DownOutlined, TeamOutlined } from '@ant-design/icons';
+import { DownOutlined, TeamOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Dropdown } from 'antd';
 import clsx from 'clsx';
 import { useState } from 'react';
@@ -15,10 +15,10 @@ export function FeaturesMenu() {
       trigger={['click']}
       placement="bottomRight"
       dropdownRender={() => (
-        <div className="bg-transparent p-2">
+        <div className="flex flex-col gap-1 bg-transparent p-2">
           <button
             type="button"
-            className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-0 bg-transparent -mx-4 py-3 text-white"
+            className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-0 bg-transparent -mx-4 py-2 text-white"
             onClick={() => {
               setOpen(false);
               navigate('/song-tu');
@@ -26,6 +26,17 @@ export function FeaturesMenu() {
           >
             <TeamOutlined className="text-lg" />
             <span className="text-sm font-medium leading-tight">Song tu</span>
+          </button>
+          <button
+            type="button"
+            className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-0 bg-transparent -mx-4 py-2 text-white"
+            onClick={() => {
+              setOpen(false);
+              navigate('/pk');
+            }}
+          >
+            <ThunderboltOutlined className="text-lg" />
+            <span className="text-sm font-medium leading-tight">PK</span>
           </button>
         </div>
       )}

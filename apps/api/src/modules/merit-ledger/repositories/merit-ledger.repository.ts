@@ -82,9 +82,6 @@ export class MeritLedgerRepository {
       const balanceRow = await this.getBalanceForUpdate(manager, line.accountId);
       const current = BigInt(balanceRow.balance);
       const next = current + line.amount;
-      if (next < 0n) {
-        throw new Error('Merit balance cannot be negative');
-      }
 
       const saved = await entryRepo.save(
         entryRepo.create({

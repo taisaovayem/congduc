@@ -19,6 +19,8 @@ export const MERIT_LEDGER_ENTRY_TYPES = [
   'transfer_in',
   'song_tu_hit',
   'song_tu_bonus',
+  'pk_settlement_win',
+  'pk_settlement_loss',
 ] as const;
 
 export async function createMeritLedgerTables(queryRunner: QueryRunner): Promise<void> {

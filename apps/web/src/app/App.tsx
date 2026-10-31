@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes, useNavigate, useOutletContext } from 'react-router-dom';
 import { AppShell, type AppShellContext } from '@/app/layout/AppShell';
 import { HomeView } from '@/app/views/HomeView';
+import { PkLobbyView } from '@/app/views/PkLobbyView';
+import { PkRoomView } from '@/app/views/PkRoomView';
 import { SongTuLobbyView } from '@/app/views/SongTuLobbyView';
 import { SongTuRoomView } from '@/app/views/SongTuRoomView';
 import { TransferView } from '@/app/views/TransferView';
@@ -14,6 +16,8 @@ export function App() {
           <Route path="chuyen-cong-duc" element={<TransferPage />} />
           <Route path="song-tu" element={<SongTuLobbyView />} />
           <Route path="song-tu/phong/:roomId" element={<SongTuRoomView />} />
+          <Route path="pk" element={<PkLobbyView />} />
+          <Route path="pk/phong/:roomId" element={<PkRoomView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

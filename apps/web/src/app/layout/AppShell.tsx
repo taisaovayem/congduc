@@ -25,19 +25,21 @@ export function AppShell() {
   const loading = ensureSession.isPending || isLoading;
   const isHome = location.pathname === '/';
   const isSongTuRoom = location.pathname.startsWith('/song-tu/phong');
-  const isScrollablePage = !isHome && !isSongTuRoom;
+  const isPkRoom = location.pathname.startsWith('/pk/phong');
+  const isCompactRoom = isSongTuRoom || isPkRoom;
+  const isScrollablePage = !isHome && !isCompactRoom;
 
   return (
     <Layout
       className={clsx(
         'flex min-h-0 flex-col bg-transparent md:min-h-screen',
-        isSongTuRoom ? 'song-tu-room-layout h-full max-md:h-[90svh] max-md:max-h-[90svh]' : 'h-full',
+        isCompactRoom ? 'song-tu-room-layout h-full max-md:h-[90svh] max-md:max-h-[90svh]' : 'h-full',
       )}
     >
       <Header
         className={clsx(
           '!h-auto flex shrink-0 items-center justify-end gap-3 bg-transparent px-6 py-3',
-          isSongTuRoom ? 'max-md:!px-2 max-md:py-1' : 'max-md:!px-3 max-md:py-2',
+          isCompactRoom ? 'max-md:!px-2 max-md:py-1' : 'max-md:!px-3 max-md:py-2',
         )}
       >
         {!loading ? (
@@ -50,8 +52,8 @@ export function AppShell() {
       <Content
         className={clsx(
           'mx-auto flex w-full min-h-0 flex-1 flex-col px-4 pb-12 pt-6',
-          isSongTuRoom ? 'max-w-[900px]' : 'max-w-[720px]',
-          isSongTuRoom
+          isCompactRoom ? 'max-w-[900px]' : 'max-w-[720px]',
+          isCompactRoom
             ? 'max-md:overflow-hidden max-md:px-2 max-md:pb-1 max-md:pt-0'
             : 'max-md:pb-3 max-md:pt-2',
           isScrollablePage ? 'max-md:overflow-y-auto max-md:min-h-0' : 'max-md:overflow-visible',
