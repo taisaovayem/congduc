@@ -12,7 +12,7 @@ import { AccountRepository } from '../account/repositories/account.repository';
 import { MeritLedgerEntryType } from '../merit-ledger/entities/merit-ledger-entry-type.enum';
 import { MeritLedgerService } from '../merit-ledger/merit-ledger.service';
 import { hashRoomPassword, verifyRoomPassword } from '../co-cultivation/utils/room-password.util';
-import { PK_TEAM_BONUS_RATE, pickRandomPkRoomName } from './pk.constants';
+import { PK_START_COUNTDOWN_MS, PK_TEAM_BONUS_RATE, pickRandomPkRoomName } from './pk.constants';
 import { PkMokBufferService } from './pk-mok-buffer.service';
 import { PkMatchEndedPayload, PkRoomListItem, PkRoomView } from './pk.types';
 import { PkMode } from './entities/pk-mode.enum';
@@ -155,49 +155,51 @@ export class PkService implements OnModuleInit {
     const room = await this.requireRoom(roomId);
 
     const existing = await this.repository.findMember(roomId, account.id);
-    if (existing) {
-      return this.buildRoomView(roomId, account.id);
-    }
-
-    await this.verifyPassword(room.passwordHash, password);
-
-    if (room.status === PkRoomStatus.ACTIVE) {
-      await this.repository.addMember({
-        roomId,
-        accountId: account.id,
-        team: null,
-        isSpectator: true,
-      });
-      try {
-        await this.broadcastRoomState(roomId, account.id);
-      } catch {
-        /* phòng có thể vừa giải tán */
-      }
-      return this.buildRoomView(roomId, account.id);
-    }
-
-    const team = await this.pickTeamForNewFighter(roomId, room.teamSize);
-    if (!team) {
-      throw new BadRequestException('Phòng đã đủ người thi đấu');
-    }
-
-    try {
-      await this.repository.addMember({
-        roomId,
-        accountId: account.id,
-        team,
-        isSpectator: false,
-      });
-      try {
-        await this.broadcastRoomState(roomId, account.id);
-      } catch {
-        /* phòng có thể vừa giải tán */
-      }
-    } catch (error) {
-      if (isPkRoomMissingError(error)) {
+    if (!existing) {
+      await this.verifyPassword(room.passwordHash, password);
+      const roomStillOpen = await this.repository.findRoomById(roomId);
+      if (!roomStillOpen) {
         throw new NotFoundException('Phòng không còn tồn tại');
       }
-      throw error;
+
+      let joinedNow = false;
+      if (roomStillOpen.status === PkRoomStatus.ACTIVE) {
+        try {
+          await this.repository.addMember({
+            roomId,
+            accountId: account.id,
+            team: null,
+            isSpectator: true,
+          });
+          joinedNow = true;
+        } catch (error) {
+          joinedNow = await this.recoverPkJoinRace(roomId, account.id, error);
+        }
+      } else {
+        const team = await this.pickTeamForNewFighter(roomId, roomStillOpen.teamSize);
+        if (!team) {
+          throw new BadRequestException('Phòng đã đủ người thi đấu');
+        }
+        try {
+          await this.repository.addMember({
+            roomId,
+            accountId: account.id,
+            team,
+            isSpectator: false,
+          });
+          joinedNow = true;
+        } catch (error) {
+          joinedNow = await this.recoverPkJoinRace(roomId, account.id, error);
+        }
+      }
+
+      if (joinedNow) {
+        try {
+          await this.broadcastRoomState(roomId, account.id);
+        } catch {
+          /* phòng có thể vừa giải tán */
+        }
+      }
     }
 
     return this.buildRoomView(roomId, account.id);
@@ -349,7 +351,7 @@ export class PkService implements OnModuleInit {
       }
     }
 
-    const startedAt = new Date();
+    const startedAt = new Date(Date.now() + PK_START_COUNTDOWN_MS);
     const endsAt = new Date(startedAt.getTime() + room.durationMinutes * 60_000);
 
     await this.repository.updateRoom(roomId, {
@@ -380,6 +382,9 @@ export class PkService implements OnModuleInit {
     if (room.status !== PkRoomStatus.ACTIVE) {
       throw new BadRequestException('Trận PK chưa bắt đầu');
     }
+    if (!this.isMatchFightStarted(room)) {
+      throw new BadRequestException('Đang đếm ngược — chưa gõ được mõ');
+    }
     if (!member.isFighter || member.isSpectator) {
       throw new ForbiddenException('Chỉ võ sĩ mới gõ được mõ');
     }
@@ -400,7 +405,7 @@ export class PkService implements OnModuleInit {
 
   private async flushBlock(roomId: string, hitsByAccount: Map<string, number>): Promise<void> {
     const room = await this.repository.findRoomById(roomId);
-    if (!room || room.status !== PkRoomStatus.ACTIVE) {
+    if (!room || room.status !== PkRoomStatus.ACTIVE || !this.isMatchFightStarted(room)) {
       this.mokBuffer.clearRoom(roomId);
       return;
     }
@@ -812,6 +817,29 @@ export class PkService implements OnModuleInit {
       return PkTeam.BLUE;
     }
     return PkTeam.BLUE;
+  }
+
+  /** HTTP join và socket room:enter có thể chạy song song — coi trùng khóa là đã vào phòng. */
+  private async recoverPkJoinRace(
+    roomId: string,
+    accountId: string,
+    error: unknown,
+  ): Promise<boolean> {
+    const raced = await this.repository.findMember(roomId, accountId);
+    if (raced) {
+      return false;
+    }
+    if (isPkRoomMissingError(error)) {
+      throw new NotFoundException('Phòng không còn tồn tại');
+    }
+    throw error;
+  }
+
+  private isMatchFightStarted(room: { matchStartedAt: Date | null }): boolean {
+    if (!room.matchStartedAt) {
+      return false;
+    }
+    return room.matchStartedAt.getTime() <= Date.now();
   }
 
   private scheduleMatchEnd(roomId: string, endsAt: Date): void {

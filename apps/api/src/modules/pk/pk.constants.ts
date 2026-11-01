@@ -1,6 +1,7 @@
 import { randomInt } from 'crypto';
 
 export const PK_BLOCK_MS = 5_000;
+export const PK_START_COUNTDOWN_MS = 3_000;
 export const PK_TEAM_BONUS_RATE = 0.2;
 
 export const RANDOM_PK_ROOM_NAMES = [

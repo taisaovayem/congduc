@@ -15,6 +15,7 @@ import { PkMatchResultModal } from '@/modules/pk/components/PkMatchResultModal';
 import { PkTeamBoard } from '@/modules/pk/components/PkTeamBoard';
 import { PK_MODE_LABELS, formatPkTeamSize } from '@/modules/pk/constants/pk-labels';
 import { formatMatchTimer, usePkMatchTimer } from '@/modules/pk/hooks/use-pk-match-timer';
+import { usePkStartCountdown } from '@/modules/pk/hooks/use-pk-start-countdown';
 import { usePkRoomSocket } from '@/modules/pk/hooks/use-pk-room-socket';
 import { joinPkById } from '@/modules/pk/api/pk-api';
 import { SongTuMokPanel } from '@/modules/co-cultivation/components/SongTuMokPanel';
@@ -54,7 +55,9 @@ export function PkRoomView() {
   );
 
   const matchActive = room?.status === 'active';
-  const remainingSeconds = usePkMatchTimer(room?.matchEndsAt, matchActive);
+  const { inCountdown, countdownSeconds } = usePkStartCountdown(room?.matchStartedAt, matchActive);
+  const fightStarted = matchActive && !inCountdown;
+  const remainingSeconds = usePkMatchTimer(room?.matchEndsAt, fightStarted);
 
   useEffect(() => {
     if (!sessionReady || !roomId) {
@@ -169,7 +172,7 @@ export function PkRoomView() {
   };
 
   const isHost = room?.hostAccountId === room?.myAccountId;
-  const canHit = Boolean(me?.isFighter && !me.isSpectator && matchActive);
+  const canHit = Boolean(me?.isFighter && !me.isSpectator && fightStarted);
   const showJoinSpinner = joining && !room && !passwordModalOpen;
 
   return (
@@ -227,9 +230,9 @@ export function PkRoomView() {
                   ) : null}
                   <Tag
                     className="!m-0 !text-[10px] !leading-tight md:!text-xs"
-                    color={room.status === 'active' ? 'green' : 'default'}
+                    color={fightStarted ? 'green' : inCountdown ? 'gold' : 'default'}
                   >
-                    {room.status === 'active' ? 'Đang PK' : 'Chờ'}
+                    {fightStarted ? 'Đang PK' : inCountdown ? 'Chuẩn bị' : 'Chờ'}
                   </Tag>
                 </p>
               </div>
@@ -259,14 +262,29 @@ export function PkRoomView() {
               </div>
             </div>
 
-            {matchActive ? (
+            {inCountdown ? (
+              <div className="py-0.5 text-center">
+                <p className="m-0 text-xs text-white/75 md:text-sm">Chuẩn bị…</p>
+                <p className="m-0 text-3xl font-bold tabular-nums md:text-4xl">{countdownSeconds}</p>
+              </div>
+            ) : fightStarted ? (
               <div className="py-0.5 text-center text-lg font-bold tabular-nums md:text-xl">
                 {formatMatchTimer(remainingSeconds)}
               </div>
             ) : null}
           </header>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1 md:flex md:flex-col md:justify-center md:py-2">
+          <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain py-1 md:flex md:flex-col md:justify-center md:py-2">
+            {inCountdown ? (
+              <div
+                className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-1 bg-black/45"
+                aria-live="polite"
+                aria-label={`Bắt đầu sau ${countdownSeconds} giây`}
+              >
+                <span className="text-sm font-medium text-white/90 md:text-base">Bắt đầu PK</span>
+                <span className="text-6xl font-bold tabular-nums md:text-7xl">{countdownSeconds}</span>
+              </div>
+            ) : null}
             <PkTeamBoard
               members={room.members}
               myAccountId={room.myAccountId}
