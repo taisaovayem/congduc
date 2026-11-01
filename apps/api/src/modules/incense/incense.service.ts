@@ -14,17 +14,26 @@ export interface ActiveIncenseView {
   remainingSeconds: number;
 }
 
+export type IncenseMeritCreditListener = (accountId: string, amount: number) => void;
+
 @Injectable()
 export class IncenseService {
+  private meritCreditListener: IncenseMeritCreditListener | null = null;
+
   constructor(
     private readonly incenseRepository: IncenseRepository,
     private readonly meritLedgerService: MeritLedgerService,
   ) {}
 
-  async creditPendingMerit(accountId: string): Promise<void> {
+  setMeritCreditListener(listener: IncenseMeritCreditListener | null): void {
+    this.meritCreditListener = listener;
+  }
+
+  /** Số giây công đức vừa ghi sổ (0 nếu không có). */
+  async creditPendingMerit(accountId: string): Promise<number> {
     const session = await this.incenseRepository.findActiveByAccountId(accountId);
     if (!session) {
-      return;
+      return 0;
     }
 
     const now = new Date();
@@ -37,7 +46,7 @@ export class IncenseService {
       if (now >= session.endsAt) {
         await this.incenseRepository.deactivate(session.id);
       }
-      return;
+      return 0;
     }
 
     await this.meritLedgerService.postCredit(
@@ -55,6 +64,9 @@ export class IncenseService {
     if (now >= session.endsAt) {
       await this.incenseRepository.deactivate(session.id);
     }
+
+    this.meritCreditListener?.(accountId, elapsedSeconds);
+    return elapsedSeconds;
   }
 
   async startIncense(accountId: string): Promise<ActiveIncenseView> {
@@ -86,19 +98,20 @@ export class IncenseService {
   }
 
   /** Kết thúc session nếu đã hết giờ (ghi nốt công đức còn lại). */
-  async finalizeIfExpired(accountId: string): Promise<void> {
+  async finalizeIfExpired(accountId: string): Promise<number> {
     const session = await this.incenseRepository.findActiveByAccountId(accountId);
     if (!session) {
-      return;
+      return 0;
     }
     if (new Date() >= session.endsAt) {
-      await this.creditPendingMerit(accountId);
+      return this.creditPendingMerit(accountId);
     }
+    return 0;
   }
 
   /** Trạng thái nhang + công đức hiển thị (tính trên server, chưa ghi sổ phần giây chờ). */
   async getRealtimeState(accountId: string): Promise<IncenseRealtimePayload> {
-    await this.finalizeIfExpired(accountId);
+    await this.finalizeIfExpired(accountId); // ghi nốt công đức nếu hết giờ
 
     const balance = BigInt(await this.meritLedgerService.getBalance(accountId));
     const session = await this.incenseRepository.findActiveByAccountId(accountId);

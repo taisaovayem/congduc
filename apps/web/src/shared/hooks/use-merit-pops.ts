@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 export const MERIT_POP_DURATION_MS = 1_050;
 
@@ -25,21 +25,4 @@ export function useMeritPops() {
   }, []);
 
   return { pops, spawn };
-}
-
-/** Định kỳ spawn khi `active` (vd. thắp hương: 60s → +60). */
-export function useMeritPopInterval(
-  active: boolean,
-  spawn: (amount?: number) => void,
-  intervalMs: number,
-  amount: number,
-) {
-  useEffect(() => {
-    if (!active) {
-      return;
-    }
-
-    const timerId = window.setInterval(() => spawn(amount), intervalMs);
-    return () => clearInterval(timerId);
-  }, [active, spawn, intervalMs, amount]);
 }

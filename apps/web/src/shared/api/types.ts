@@ -24,6 +24,7 @@ export interface IncenseRealtimeState {
   meritPoints: string;
   startedAt?: string;
   endsAt?: string;
+  meritCredited?: number;
 }
 
 export interface CreateTransferResponse {

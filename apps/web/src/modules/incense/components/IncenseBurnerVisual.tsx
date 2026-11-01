@@ -1,13 +1,14 @@
 import clsx from 'clsx';
 import luHuongImage from '@/assets/images/lu-huong.png';
 import { MeritPopOverlay } from '@/shared/components/MeritPopOverlay';
-import { useMeritPopInterval, useMeritPops } from '@/shared/hooks/use-merit-pops';
+import type { MeritPopItem } from '@/shared/hooks/use-merit-pops';
 import { useIncenseBurnProgress } from '../hooks/use-incense-burn-progress';
 
 interface IncenseBurnerVisualProps {
   burning: boolean;
   startedAt?: string;
   endsAt?: string;
+  pops?: MeritPopItem[];
   onStart?: () => void;
   startDisabled?: boolean;
 }
@@ -26,12 +27,11 @@ export function IncenseBurnerVisual({
   burning,
   startedAt,
   endsAt,
+  pops = [],
   onStart,
   startDisabled = false,
 }: IncenseBurnerVisualProps) {
   const bodyRatio = useIncenseBurnProgress(burning, startedAt, endsAt);
-  const { pops, spawn } = useMeritPops();
-  useMeritPopInterval(burning, spawn, 60_000, 60);
 
   const bodyHeight = Math.round(MAX_BODY_PX * bodyRatio);
   const showStick = burning && bodyRatio > 0.01;

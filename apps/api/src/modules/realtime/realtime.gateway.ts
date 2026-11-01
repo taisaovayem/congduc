@@ -1,4 +1,4 @@
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger, OnModuleDestroy, OnModuleInit, UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -18,7 +18,7 @@ import { WsDeviceIdGuard } from './ws-device-id.guard';
   cors: { origin: true, credentials: true },
   namespace: '/realtime',
 })
-export class RealtimeGateway implements OnGatewayConnection {
+export class RealtimeGateway implements OnGatewayConnection, OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RealtimeGateway.name);
 
   @WebSocketServer()
@@ -30,6 +30,33 @@ export class RealtimeGateway implements OnGatewayConnection {
     private readonly accountRepository: AccountRepository,
     private readonly wsDeviceIdGuard: WsDeviceIdGuard,
   ) {}
+
+  onModuleInit(): void {
+    this.incenseService.setMeritCreditListener((accountId, amount) => {
+      void this.notifyIncenseMeritCredit(accountId, amount);
+    });
+  }
+
+  onModuleDestroy(): void {
+    this.incenseService.setMeritCreditListener(null);
+  }
+
+  private async notifyIncenseMeritCredit(accountId: string, amount: number): Promise<void> {
+    if (amount <= 0) {
+      return;
+    }
+    try {
+      const account = await this.accountRepository.findById(accountId);
+      if (!account) {
+        return;
+      }
+      await this.pushIncenseState(account.deviceId, amount);
+    } catch (err) {
+      this.logger.warn(
+        `Incense merit credit push failed for ${accountId}: ${err instanceof Error ? err.message : err}`,
+      );
+    }
+  }
 
   async handleConnection(client: Socket): Promise<void> {
     try {
@@ -72,12 +99,18 @@ export class RealtimeGateway implements OnGatewayConnection {
     return this.pushIncenseState(deviceId);
   }
 
-  async pushIncenseState(deviceId: string): Promise<IncenseRealtimePayload | null> {
+  async pushIncenseState(
+    deviceId: string,
+    meritCredited?: number,
+  ): Promise<IncenseRealtimePayload | null> {
     const account = await this.accountRepository.findByDeviceId(deviceId);
     if (!account) {
       return null;
     }
     const payload = await this.incenseService.getRealtimeState(account.id);
+    if (meritCredited !== undefined && meritCredited > 0) {
+      payload.meritCredited = meritCredited;
+    }
     this.emitToDevice(deviceId, 'incense:update', payload);
     return payload;
   }

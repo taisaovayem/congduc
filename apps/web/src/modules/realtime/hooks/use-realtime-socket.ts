@@ -8,11 +8,16 @@ import { getStoredDeviceId } from '@/shared/storage/device-session';
 
 const WS_BASE = import.meta.env.VITE_WS_URL ?? 'http://localhost:3000';
 
-export function useRealtimeSocket(enabled: boolean) {
+export function useRealtimeSocket(
+  enabled: boolean,
+  options?: { onIncenseMeritCredited?: (amount: number) => void },
+) {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const [lastBroadcast, setLastBroadcast] = useState<string | null>(null);
+  const onIncenseMeritCreditedRef = useRef(options?.onIncenseMeritCredited);
+  onIncenseMeritCreditedRef.current = options?.onIncenseMeritCredited;
 
   useEffect(() => {
     if (!enabled) {
@@ -43,10 +48,14 @@ export function useRealtimeSocket(enabled: boolean) {
     });
 
     socket.on('incense:update', (payload: IncenseRealtimeState) => {
-      queryClient.setQueryData(activeIncenseQueryKey, payload);
+      const { meritCredited, ...incenseState } = payload;
+      queryClient.setQueryData(activeIncenseQueryKey, incenseState);
       queryClient.setQueryData(accountQueryKey, (prev: { meritPoints: string } | undefined) =>
         prev ? { ...prev, meritPoints: payload.meritPoints } : prev,
       );
+      if (meritCredited !== undefined && meritCredited > 0) {
+        onIncenseMeritCreditedRef.current?.(meritCredited);
+      }
     });
 
     return () => {
